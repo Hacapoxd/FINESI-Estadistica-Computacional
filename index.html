@@ -192,8 +192,12 @@ class Jugador:
     // Pasar la lista a Python de forma segura
     pyodide.globals.set("nombres", nombres);
     await pyodide.runPythonAsync(`
-jugadores = [Jugador(nombre) for nombre in nombres]
+    jugadores = [Jugador(nombre) for nombre in nombres]
+    num_jugadores = len(jugadores)
+    
     `);
+    jugadores = Array.from({ length: pyodide.globals.get("num_jugadores") });
+
 
     pyodideReady = true;
     document.getElementById('loading').classList.add('hidden');
@@ -213,6 +217,9 @@ jugadores = [Jugador(nombre) for nombre in nombres]
 function mostrarJugadores() {
   const contenedor = document.getElementById("jugadores");
   const select = document.getElementById("jugadorCanje");
+  document.getElementById("solicitante").innerHTML = '<option value="">Quien pide...</option>';
+  document.getElementById("receptor").innerHTML = '<option value="">A quién le pide...</option>';
+
   contenedor.innerHTML = "";
   select.innerHTML = '<option value="">Selecciona un jugador...</option>';
 
@@ -308,9 +315,10 @@ function mostrarJugadores() {
 
     function repartirDulces() {
       try {
-        for (let i = 0; i < jugadores.length; i++) {
-          pyodide.runPython(`jugadores[${i}].dar_dulces_aleatorios()`);
-        }
+          pyodide.runPython(`
+      for jugador in jugadores:
+          jugador.dar_dulces_aleatorios()
+          `);
         mostrarJugadores();
         actualizarEstadisticas();
         mostrarMensaje("🎉 Dulces aleatorios repartidos a todos los jugadores", "success");
