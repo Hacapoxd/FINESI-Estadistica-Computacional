@@ -4,8 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>🍭 Juego de Dulces - Intercambio Dulce</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pyodide/0.23.4/pyodide.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pyodide/0.23.4/pyodide.js "></script>
   <link rel="stylesheet" href="style.css">
+  <style>
+    /* Aquí puedes incluir tu estilo o dejarlo en style.css */
+  </style>
 </head>
 <body>
   <div class="container">
@@ -52,20 +55,18 @@
           </button>
           <div id="resultadoCanje"></div>
         </div>
-
         <div class="control-card">
           <h3>🎁 Dulce Extra</h3>
           <select id="tipoExtra">
             <option value="">Selecciona tipo...</option>
-            <option value="A">🍬 Dulce Tipo A</option>
-            <option value="B">🍭 Dulce Tipo B</option>
-            <option value="C">🧁 Dulce Tipo C</option>
+            <option value="A">🍬 Tipo A</option>
+            <option value="B">🍭 Tipo B</option>
+            <option value="C">🧁 Tipo C</option>
           </select>
           <button class="btn" onclick="elegirDulceExtra()" id="btnDulceExtra" disabled>
             🎯 Agregar Dulce Extra
           </button>
         </div>
-
         <div class="control-card">
           <h3>🎲 Acciones Adicionales</h3>
           <button class="btn btn-secondary" onclick="repartirDulces()">
@@ -81,59 +82,37 @@
     </div>
   </div>
 
-<script>
-  let pyodideReady = false;
-  let jugadorSeleccionado = null;
-  let totalIntercambios = 0;
-  let jugadores = [];
+  <!-- Lógica del juego -->
+  <script id="py-src" type="text/python">
+class Jugador:
+    def __init__(self, nombre):
+        self.nombre = nombre
+        self.dulces = {'A': 2, 'B': 2, 'C': 2}
+        self.canjes_realizados = 0
 
-  async function cargarPythonScript() {
-    const response = await fetch('game.py');
-    return await response.text();
-  }
+    def mostrar_inventario(self):
+        return f"{self.nombre}: A={self.dulces['A']}, B={self.dulces['B']}, C={self.dulces['C']}"
 
-  async function iniciarPyodide() {
-    try {
-      document.getElementById('loading').classList.remove('hidden');
-      document.getElementById('btnIniciar').disabled = true;
+    def canjear_dulces(self):
+        for tipo in ['A', 'B', 'C']:
+            if self.dulces[tipo] >= 3:
+                self.dulces[tipo] -= 3
+                self.canjes_realizados += 1
+                return True
+        return False
 
-      let pyodide = await loadPyodide();
-      window.pyodide = pyodide;
+    def dar_dulce_extra(self, tipo):
+        if tipo in self.dulces:
+            self.dulces[tipo] += 1
 
-      // Cargar contenido de game.py
-      const pythonCode = await cargarPythonScript();
-      await pyodide.runPythonAsync(pythonCode);
+    def total_dulces(self):
+        return sum(self.dulces.values())
 
-      // Crear jugadores
-      const nombresJugadores = [
-        "Ana 👩", "Beto 👨", "Carlos 🧑",
-        "Harrison 👨‍💼", "Russbel 👨‍🎓", "Brian 👨‍💻",
-        "Cesia 👩‍🎨", "Roberth 👨‍🔧", "Danny 👨‍🎤"
-      ];
-
-      let pythonCodeCrearJugadores = `
-from js import Array
-jugadores = [Jugador(nombre) for nombre in Array.new(${JSON.stringify(nombresJugadores)})]
-jugadores
-`;
-      const jugadoresCreados = await pyodide.runPythonAsync(pythonCodeCrearJugadores);
-      window.jugadores = jugadoresCreados;
-
-      pyodideReady = true;
-      document.getElementById('loading').classList.add('hidden');
-      document.getElementById('gameContent').classList.remove('hidden');
-      mostrarJugadores();
-      actualizarEstadisticas();
-      mostrarMensaje("¡Juego iniciado correctamente! 🎉", "success");
-    } catch (error) {
-      console.error("Error iniciando Pyodide:", error);
-      mostrarMensaje("Error al cargar el juego. Inténtalo de nuevo.", "error");
-      document.getElementById('loading').classList.add('hidden');
-      document.getElementById('btnIniciar').disabled = false;
-    }
-  }
-
-</script>
+    def dar_dulces_aleatorios(self):
+        import random
+        for tipo in ['A', 'B', 'C']:
+            self.dulces[tipo] += random.randint(0, 3)
+  </script>
 
   <script>
     let pyodideReady = false;
@@ -145,36 +124,37 @@ jugadores
       try {
         document.getElementById('loading').classList.remove('hidden');
         document.getElementById('btnIniciar').disabled = true;
-        
-        let pyodide = await loadPyodide();
-        window.pyodide = pyodide;
-        
-        // Ejecutar el código Python
-        await pyodide.runPython(document.getElementById("py-src").textContent);
-        
+
+        window.pyodide = await loadPyodide();
+        const pythonCode = document.getElementById("py-src").textContent;
+        await pyodide.runPythonAsync(pythonCode);
+
         // Crear jugadores
-        const jugadoresCreados = await pyodide.runPythonAsync(`
-jugadores = [
-    Jugador("Ana 👩"), Jugador("Beto 👨"), Jugador("Carlos 🧑"), 
-    Jugador("Harrison 👨‍💼"), Jugador("Russbel 👨‍🎓"), Jugador("Brian 👨‍💻"), 
-    Jugador("Cesia 👩‍🎨"), Jugador("Roberth 👨‍🔧"), Jugador("Danny 👨‍🎤")
-]
-jugadores
-        `);
-        
-        window.jugadores = jugadoresCreados;
+        const nombres = [
+          "Ana 👩", "Beto 👨", "Carlos 🧑",
+          "Harrison 👨‍💼", "Russbel 👨‍🎓", "Brian 👨‍💻",
+          "Cesia 👩‍🎨", "Roberth 👨‍🔧", "Danny 👨‍🎤"
+        ];
+
+        const code = `
+from js import Array
+jugadores = [Jugador(nombre) for nombre in Array.new(${JSON.stringify(nombres)})]
+len(jugadores)
+        `;
+
+        const num_jugadores = await pyodide.runPythonAsync(code);
+        window.jugadores = await pyodide.runPythonAsync("jugadores");
+
         pyodideReady = true;
-        
         document.getElementById('loading').classList.add('hidden');
         document.getElementById('gameContent').classList.remove('hidden');
-        
         mostrarJugadores();
         actualizarEstadisticas();
         mostrarMensaje("¡Juego iniciado correctamente! 🎉", "success");
-        
+
       } catch (error) {
-        console.error("Error iniciando Pyodide:", error);
-        mostrarMensaje("Error al cargar el juego. Inténtalo de nuevo.", "error");
+        console.error("Error al cargar Pyodide:", error);
+        mostrarMensaje("Error al cargar el juego. Revisa la consola.", "error");
         document.getElementById('loading').classList.add('hidden');
         document.getElementById('btnIniciar').disabled = false;
       }
@@ -183,55 +163,28 @@ jugadores
     function mostrarJugadores() {
       const contenedor = document.getElementById("jugadores");
       const select = document.getElementById("jugadorCanje");
-      
       contenedor.innerHTML = "";
       select.innerHTML = '<option value="">Selecciona un jugador...</option>';
-      
+
       for (let i = 0; i < jugadores.length; i++) {
-        try {
-          const jugador = pyodide.runPython(`jugadores[${i}]`);
-          const inventario = pyodide.runPython(`jugadores[${i}].dulces`);
-          const canjes = pyodide.runPython(`jugadores[${i}].canjes_realizados`);
-          
-          // Crear tarjeta de jugador
-          const div = document.createElement("div");
-          div.className = "player-card";
-          
-          const nombre = jugador.nombre;
-          const dulcesA = inventario.get('A');
-          const dulcesB = inventario.get('B');
-          const dulcesC = inventario.get('C');
-          
-          div.innerHTML = `
-            <div class="player-name">
-              ${nombre}
-              <span style="font-size: 0.8rem; color: #666;">(${canjes} canjes)</span>
-            </div>
-            <div class="candy-item">
-              <span class="candy-type">🍬 Tipo A</span>
-              <span class="candy-count">${dulcesA}</span>
-            </div>
-            <div class="candy-item">
-              <span class="candy-type">🍭 Tipo B</span>
-              <span class="candy-count">${dulcesB}</span>
-            </div>
-            <div class="candy-item">
-              <span class="candy-type">🧁 Tipo C</span>
-              <span class="candy-count">${dulcesC}</span>
-            </div>
-          `;
-          
-          contenedor.appendChild(div);
-          
-          // Agregar al select
-          const opt = document.createElement("option");
-          opt.value = i;
-          opt.text = nombre;
-          select.appendChild(opt);
-          
-        } catch (error) {
-          console.error("Error mostrando jugador:", error);
-        }
+        const jugador = pyodide.runPython(`jugadores[${i}]`);
+        const inventario = pyodide.runPython(`jugadores[${i}].dulces`);
+        const canjes = pyodide.runPython(`jugadores[${i}].canjes_realizados`);
+
+        const div = document.createElement("div");
+        div.className = "player-card";
+        div.innerHTML = `
+          <div class="player-name">${jugador.nombre} <span>(${canjes} canjes)</span></div>
+          <div class="candy-item"><span>Tipo A</span><span>${inventario.get('A')}</span></div>
+          <div class="candy-item"><span>Tipo B</span><span>${inventario.get('B')}</span></div>
+          <div class="candy-item"><span>Tipo C</span><span>${inventario.get('C')}</span></div>
+        `;
+        contenedor.appendChild(div);
+
+        const opt = document.createElement("option");
+        opt.value = i;
+        opt.text = jugador.nombre;
+        select.appendChild(opt);
       }
     }
 
@@ -241,14 +194,14 @@ jugadores
         mostrarMensaje("Por favor selecciona un jugador", "error");
         return;
       }
-      
+
       try {
         const resultado = pyodide.runPython(`jugadores[${idx}].canjear_dulces()`);
         if (resultado) {
           jugadorSeleccionado = idx;
           totalIntercambios++;
           document.getElementById("btnDulceExtra").disabled = false;
-          mostrarMensaje("¡Canje realizado exitosamente! 🎉 Ahora elige tu dulce extra.", "success");
+          mostrarMensaje("¡Canje realizado! Elige tu dulce extra.", "success");
           mostrarJugadores();
           actualizarEstadisticas();
         } else {
@@ -256,35 +209,29 @@ jugadores
         }
       } catch (error) {
         console.error("Error en canje:", error);
-        mostrarMensaje("Error al realizar el canje", "error");
+        mostrarMensaje("Error al realizar el canje.", "error");
       }
     }
 
     function elegirDulceExtra() {
       const tipo = document.getElementById("tipoExtra").value;
-      if (!tipo) {
-        mostrarMensaje("Por favor selecciona un tipo de dulce", "error");
-        return;
-      }
-      
-      if (jugadorSeleccionado === null) {
+      if (!tipo || jugadorSeleccionado === null) {
         mostrarMensaje("Primero realiza un canje válido", "error");
         return;
       }
-      
+
       try {
         pyodide.runPython(`jugadores[${jugadorSeleccionado}].dar_dulce_extra("${tipo}")`);
         jugadorSeleccionado = null;
         document.getElementById("btnDulceExtra").disabled = true;
         document.getElementById("tipoExtra").value = "";
         document.getElementById("jugadorCanje").value = "";
-        
-        mostrarMensaje("¡Dulce extra agregado! 🍭✨", "success");
         mostrarJugadores();
         actualizarEstadisticas();
+        mostrarMensaje("🎉 ¡Dulce extra agregado!", "success");
       } catch (error) {
-        console.error("Error agregando dulce extra:", error);
-        mostrarMensaje("Error al agregar el dulce extra", "error");
+        console.error("Error al agregar dulce:", error);
+        mostrarMensaje("Hubo un error al agregar el dulce extra.", "error");
       }
     }
 
@@ -293,19 +240,17 @@ jugadores
         for (let i = 0; i < jugadores.length; i++) {
           pyodide.runPython(`jugadores[${i}].dar_dulces_aleatorios()`);
         }
-        mostrarMensaje("¡Dulces aleatorios repartidos a todos los jugadores! 🎪", "success");
         mostrarJugadores();
         actualizarEstadisticas();
+        mostrarMensaje("🎉 Dulces aleatorios repartidos a todos los jugadores", "success");
       } catch (error) {
         console.error("Error repartiendo dulces:", error);
-        mostrarMensaje("Error al repartir dulces", "error");
+        mostrarMensaje("Hubo un error al repartir dulces", "error");
       }
     }
 
     function reiniciarJuego() {
-      if (confirm("¿Estás seguro de que quieres reiniciar el juego?")) {
-        location.reload();
-      }
+      location.reload();
     }
 
     function actualizarEstadisticas() {
@@ -315,7 +260,6 @@ jugadores
           const total = pyodide.runPython(`jugadores[${i}].total_dulces()`);
           totalDulces += total;
         }
-        
         document.getElementById("totalPlayers").textContent = jugadores.length;
         document.getElementById("totalCandies").textContent = totalDulces;
         document.getElementById("totalExchanges").textContent = totalIntercambios;
@@ -327,11 +271,7 @@ jugadores
     function mostrarMensaje(mensaje, tipo) {
       const contenedor = document.getElementById("resultadoCanje");
       contenedor.innerHTML = `<div class="message ${tipo}">${mensaje}</div>`;
-      
-      // Auto-ocultar después de 5 segundos
-      setTimeout(() => {
-        contenedor.innerHTML = "";
-      }, 5000);
+      setTimeout(() => { contenedor.innerHTML = ""; }, 5000);
     }
 
     function iniciarJuego() {
@@ -339,12 +279,6 @@ jugadores
         iniciarPyodide();
       }
     }
-
-    // Eventos del DOM
-    document.addEventListener("DOMContentLoaded", function() {
-      // Auto-iniciar el juego al cargar la página
-      // iniciarPyodide();
-    });
   </script>
 </body>
 </html>
