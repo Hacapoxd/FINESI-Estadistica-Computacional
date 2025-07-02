@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>🍭 Juego de Dulces - Intercambio Dulce</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pyodide/0.23.4/pyodide.js"></script>
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js"></script>
   <link rel="stylesheet" href="style.css">
   <style>
     /* Aquí puedes incluir tu estilo o dejarlo en style.css */
@@ -125,7 +125,10 @@ class Jugador:
         document.getElementById('loading').classList.remove('hidden');
         document.getElementById('btnIniciar').disabled = true;
 
-        window.pyodide = await loadPyodide();
+        window.pyodide = await loadPyodide({
+              indexURL: "https://cdn.jsdelivr.net/pyodide/v0.23.4/full/",
+            });
+
         const pythonCode = document.getElementById("py-src").textContent;
         await pyodide.runPythonAsync(pythonCode);
 
