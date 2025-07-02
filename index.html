@@ -114,10 +114,11 @@ class Jugador:
         self.canjes_realizados = 0
         self.salvado = False
 
-    def dar_dulces_aleatorios(self):
-        # Genera entre 0 y 2 dulces de cada tipo de forma aleatoria
-        for tipo in TIPOS_DULCES:
-            self.dulces[tipo] += random.randint(0, 2)
+  def dar_dulces_aleatorios(self):
+      # Reparte exactamente 2 dulces de tipos aleatorios (pueden repetirse)
+      for _ in range(2):
+          tipo = random.choice(TIPOS_DULCES)
+          self.dulces[tipo] += 1
 
     def canjear_dulces(self):
         if all(self.dulces[tipo] >= 1 for tipo in TIPOS_DULCES):
@@ -337,7 +338,17 @@ function mostrarJugadores() {
         mostrarMensaje("Completa todos los campos y elige jugadores distintos", "error");
         return;
       }
-    
+
+        const nombreSolicitante = pyodide.runPython(`jugadores[${solicitante}].nombre`);
+        const nombreReceptor = pyodide.runPython(`jugadores[${receptor}].nombre`);
+      
+        const confirmar = confirm(`${nombreReceptor.trim()}:\n¿Aceptas dar un dulce tipo ${tipo} a ${nombreSolicitante.trim()}?`);
+      
+        if (!confirmar) {
+          mostrarMensaje(`${nombreReceptor.trim()} rechazó la solicitud ❌`, "error");
+          return;
+        }
+      
       try {
         const resultado = pyodide.runPython(`
     jugadores[${solicitante}].solicitar_dulce(jugadores[${receptor}], "${tipo}")
