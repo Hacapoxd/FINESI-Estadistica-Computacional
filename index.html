@@ -121,47 +121,48 @@ class Jugador:
     let jugadores = [];
 
     async function iniciarPyodide() {
-      try {
-        document.getElementById('loading').classList.remove('hidden');
-        document.getElementById('btnIniciar').disabled = true;
+  try {
+    document.getElementById('loading').classList.remove('hidden');
+    document.getElementById('btnIniciar').disabled = true;
 
-        window.pyodide = await loadPyodide({
-              indexURL: "https://cdn.jsdelivr.net/pyodide/v0.23.4/full/",
-            });
+    window.pyodide = await loadPyodide({
+      indexURL: "https://cdn.jsdelivr.net/pyodide/v0.23.4/full/",
+    });
 
-        const pythonCode = document.getElementById("py-src").textContent;
-        await pyodide.runPythonAsync(pythonCode);
+    const pythonCode = document.getElementById("py-src").textContent;
+    await pyodide.runPythonAsync(pythonCode);
 
-        // Crear jugadores
-        const nombres = [
-          "Ana 👩", "Beto 👨", "Carlos 🧑",
-          "Harrison 👨‍💼", "Russbel 👨‍🎓", "Brian 👨‍💻",
-          "Cesia 👩‍🎨", "Roberth 👨‍🔧", "Danny 👨‍🎤"
-        ];
+    // Crear jugadores
+    const nombres = [
+      "Ana 👩", "Beto 👨", "Carlos 🧑",
+      "Harrison 👨‍💼", "Russbel 👨‍🎓", "Brian 👨‍💻",
+      "Cesia 👩‍🎨", "Roberth 👨‍🔧", "Danny 👨‍🎤"
+    ];
 
-        const code = `
-from js import Array
-jugadores = [Jugador(nombre) for nombre in Array.new(${JSON.stringify(nombres)})]
-len(jugadores)
-        `;
+    // 👇 Esta es la forma correcta de pasar la lista a Python
+    pyodide.globals.set("nombres", nombres);
 
-        const num_jugadores = await pyodide.runPythonAsync(code);
-        window.jugadores = await pyodide.runPythonAsync("jugadores");
+    const code = `
+jugadores = [Jugador(nombre) for nombre in nombres]
+`;
+    await pyodide.runPythonAsync(code);
 
-        pyodideReady = true;
-        document.getElementById('loading').classList.add('hidden');
-        document.getElementById('gameContent').classList.remove('hidden');
-        mostrarJugadores();
-        actualizarEstadisticas();
-        mostrarMensaje("¡Juego iniciado correctamente! 🎉", "success");
+    jugadores = nombres; // aquí seguimos usando JS para mostrar y controlar
+    pyodideReady = true;
+    document.getElementById('loading').classList.add('hidden');
+    document.getElementById('gameContent').classList.remove('hidden');
+    mostrarJugadores();
+    actualizarEstadisticas();
+    mostrarMensaje("¡Juego iniciado correctamente! 🎉", "success");
 
-      } catch (error) {
-        console.error("Error al cargar Pyodide:", error);
-        mostrarMensaje("Error al cargar el juego. Revisa la consola.", "error");
-        document.getElementById('loading').classList.add('hidden');
-        document.getElementById('btnIniciar').disabled = false;
-      }
-    }
+  } catch (error) {
+    console.error("Error al cargar Pyodide:", error);
+    mostrarMensaje("Error al cargar el juego. Revisa la consola.", "error");
+    document.getElementById('loading').classList.add('hidden');
+    document.getElementById('btnIniciar').disabled = false;
+  }
+}
+
 
     function mostrarJugadores() {
       const contenedor = document.getElementById("jugadores");
