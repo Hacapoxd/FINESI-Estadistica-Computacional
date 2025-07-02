@@ -100,67 +100,66 @@
   </div>
 
   <!-- Lógica del juego -->
-<script id="py-src" type="text/python">
-from collections import defaultdict
-import random
-
-TIPOS_DULCES = ['A', 'B', 'C']
-
-class Jugador:
-    def __init__(self, nombre):
-        self.nombre = nombre
-        self.dulces = defaultdict(int)
-        self.chupetines = 0
-        self.canjes_realizados = 0
-        self.salvado = False
-
-    def dar_dulces_aleatorios(self):
-        # Reparte exactamente 2 dulces de tipos aleatorios (pueden repetirse)
-        for _ in range(2):
-            tipo = random.choice(TIPOS_DULCES)
-            self.dulces[tipo] += 1
-
-    def canjear_dulces(self):
-        if all(self.dulces[tipo] >= 1 for tipo in TIPOS_DULCES):
+  <script id="py-src" type="text/python">
+    from collections import defaultdict
+    import random
+    
+    TIPOS_DULCES = ['A', 'B', 'C']
+    
+    class Jugador:
+        def __init__(self, nombre):
+            self.nombre = nombre
+            self.dulces = defaultdict(int)
+            self.chupetines = 0
+            self.canjes_realizados = 0
+            self.salvado = False
+    
+        def dar_dulces_aleatorios(self):
             for tipo in TIPOS_DULCES:
-                self.dulces[tipo] -= 1
-            self.chupetines += 1
-            self.canjes_realizados += 1
-            self.salvado = True
-            return True
-        else:
-            return False
-
-    def dar_dulce_extra(self, tipo):
-        if tipo in TIPOS_DULCES:
-            self.dulces[tipo] += 1
-
-    def tiene_dulce(self, tipo):
-        return self.dulces[tipo] > 0
-
-    def quitar_dulce(self, tipo):
-        if self.dulces[tipo] > 0:
-            self.dulces[tipo] -= 1
-            return True
-        return False
-
-    def dar_dulce(self, tipo):
-        self.dulces[tipo] += 1
-
-    def solicitar_dulce(self, otro, tipo):
-        # Intenta recibir un dulce del otro jugador
-        if otro.tiene_dulce(tipo):
-            if otro.quitar_dulce(tipo):
-                self.dar_dulce(tipo)
+                self.dulces[tipo] += random.randint(0, 2)
+    
+        def canjear_dulces(self):
+            if all(self.dulces[tipo] >= 1 for tipo in TIPOS_DULCES):
+                for tipo in TIPOS_DULCES:
+                    self.dulces[tipo] -= 1
+                self.chupetines += 1
+                self.canjes_realizados += 1
+                self.salvado = True
                 return True
-        return False
-
-    def total_dulces(self):
-        return sum(self.dulces[tipo] for tipo in TIPOS_DULCES)
-
-    def mostrar_inventario(self):
-        return f"{self.nombre} | Dulces: {dict(self.dulces)}, Chupetines: {self.chupetines}, Salvado: {self.salvado}"
-</script>
+            else:
+                return False
+    
+        def dar_dulce_extra(self, tipo):
+            if tipo in TIPOS_DULCES:
+                self.dulces[tipo] += 1
+    
+        def tiene_dulce(self, tipo):
+            return self.dulces[tipo] > 0
+    
+        def quitar_dulce(self, tipo):
+            if self.dulces[tipo] > 0:
+                self.dulces[tipo] -= 1
+                return True
+            return False
+    
+        def dar_dulce(self, tipo):
+            self.dulces[tipo] += 1
+    
+        def solicitar_dulce(self, otro, tipo):
+            # Intenta recibir un dulce del otro jugador
+            if otro.tiene_dulce(tipo):
+                if otro.quitar_dulce(tipo):
+                    self.dar_dulce(tipo)
+                    return True
+            return False
+    
+        def total_dulces(self):
+            return sum(self.dulces[tipo] for tipo in TIPOS_DULCES)
+    
+        def mostrar_inventario(self):
+            return f"{self.nombre} | Dulces: {dict(self.dulces)}, Chupetines: {self.chupetines}, Salvado: {self.salvado}"
+    
+  </script>
 
 
   <script>
