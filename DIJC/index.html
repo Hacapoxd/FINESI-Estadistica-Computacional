@@ -81,59 +81,38 @@
     </div>
   </div>
 
-<script>
-  let pyodideReady = false;
-  let jugadorSeleccionado = null;
-  let totalIntercambios = 0;
-  let jugadores = [];
+<script id="py-src" type="text/python">
+import random
 
-  async function cargarPythonScript() {
-    const response = await fetch('game.py');
-    return await response.text();
-  }
-
-  async function iniciarPyodide() {
-    try {
-      document.getElementById('loading').classList.remove('hidden');
-      document.getElementById('btnIniciar').disabled = true;
-
-      let pyodide = await loadPyodide();
-      window.pyodide = pyodide;
-
-      // Cargar contenido de game.py
-      const pythonCode = await cargarPythonScript();
-      await pyodide.runPythonAsync(pythonCode);
-
-      // Crear jugadores
-      const nombresJugadores = [
-        "Ana 👩", "Beto 👨", "Carlos 🧑",
-        "Harrison 👨‍💼", "Russbel 👨‍🎓", "Brian 👨‍💻",
-        "Cesia 👩‍🎨", "Roberth 👨‍🔧", "Danny 👨‍🎤"
-      ];
-
-      let pythonCodeCrearJugadores = `
-from js import Array
-jugadores = [Jugador(nombre) for nombre in Array.new(${JSON.stringify(nombresJugadores)})]
-jugadores
-`;
-      const jugadoresCreados = await pyodide.runPythonAsync(pythonCodeCrearJugadores);
-      window.jugadores = jugadoresCreados;
-
-      pyodideReady = true;
-      document.getElementById('loading').classList.add('hidden');
-      document.getElementById('gameContent').classList.remove('hidden');
-      mostrarJugadores();
-      actualizarEstadisticas();
-      mostrarMensaje("¡Juego iniciado correctamente! 🎉", "success");
-    } catch (error) {
-      console.error("Error iniciando Pyodide:", error);
-      mostrarMensaje("Error al cargar el juego. Inténtalo de nuevo.", "error");
-      document.getElementById('loading').classList.add('hidden');
-      document.getElementById('btnIniciar').disabled = false;
-    }
-  }
-
-</script>
+class Jugador:
+    def __init__(self, nombre):
+        self.nombre = nombre
+        self.dulces = {'A': random.randint(0, 5), 'B': random.randint(0, 5), 'C': random.randint(0, 5)}
+        self.canjes_realizados = 0
+    
+    def mostrar_inventario(self):
+        return f"{self.nombre}: A={self.dulces['A']}, B={self.dulces['B']}, C={self.dulces['C']}"
+    
+    def canjear_dulces(self):
+        # Necesita al menos 3 dulces de cualquier tipo para canjear
+        for tipo in ['A', 'B', 'C']:
+            if self.dulces[tipo] >= 3:
+                self.dulces[tipo] -= 3
+                self.canjes_realizados += 1
+                return True
+        return False
+    
+    def dar_dulce_extra(self, tipo):
+        if tipo in self.dulces:
+            self.dulces[tipo] += 1
+    
+    def total_dulces(self):
+        return sum(self.dulces.values())
+    
+    def dar_dulces_aleatorios(self):
+        for tipo in ['A', 'B', 'C']:
+            self.dulces[tipo] += random.randint(0, 3)
+  </script>
 
   <script>
     let pyodideReady = false;
