@@ -56,9 +56,21 @@
   <p>Canjea dulces por chupetines y juega con tus amigos.</p>
   <button onclick="iniciarJuego()">🔄 Iniciar Juego</button>
 
-  <div id="gameArea" style="margin-top: 20px;">
-    <div id="jugadores"></div>
+  <!-- Aquí aparecerá la interfaz del juego -->
+  <div id="gameArea" style="margin-top: 20px;"></div>
+
+  <!-- Contenedor de jugadores -->
+  <div id="jugadores" class="players-grid"></div>
+
+  <div class="control-card">
+    <h3>🔄 Canjear Dulces</h3>
+    <select id="jugadorCanje"></select>
+    <button class="btn btn-secondary" onclick="canjearDulce()">
+      ✨ Realizar Canje
+    </button>
+    <div id="resultadoCanje"></div>
   </div>
+  
 </div>
 
 <!-- Lógica del juego -->
