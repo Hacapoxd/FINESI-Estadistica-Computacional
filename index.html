@@ -114,11 +114,11 @@ class Jugador:
         self.canjes_realizados = 0
         self.salvado = False
 
-  def dar_dulces_aleatorios(self):
-      # Reparte exactamente 2 dulces de tipos aleatorios (pueden repetirse)
-      for _ in range(2):
-          tipo = random.choice(TIPOS_DULCES)
-          self.dulces[tipo] += 1
+def dar_dulces_aleatorios(self):
+    # Reparte exactamente 2 dulces de tipos aleatorios (pueden repetirse)
+    for _ in range(2):
+        tipo = random.choice(TIPOS_DULCES)
+        self.dulces[tipo] += 1
 
     def canjear_dulces(self):
         if all(self.dulces[tipo] >= 1 for tipo in TIPOS_DULCES):
