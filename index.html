@@ -84,34 +84,49 @@
 
   <!-- Lógica del juego -->
   <script id="py-src" type="text/python">
+from collections import defaultdict
+
+TIPOS_DULCES = ['A', 'B', 'C']
+
 class Jugador:
     def __init__(self, nombre):
         self.nombre = nombre
-        self.dulces = {'A': 2, 'B': 2, 'C': 2}
-        self.canjes_realizados = 0
+        self.dulces = defaultdict(int)
+        self.chupetines = 0
+        self.salvado = False
 
-    def mostrar_inventario(self):
-        return f"{self.nombre}: A={self.dulces['A']}, B={self.dulces['B']}, C={self.dulces['C']}"
-
-    def canjear_dulces(self):
-        for tipo in ['A', 'B', 'C']:
-            if self.dulces[tipo] >= 3:
-                self.dulces[tipo] -= 3
-                self.canjes_realizados += 1
-                return True
-        return False
-
-    def dar_dulce_extra(self, tipo):
-        if tipo in self.dulces:
+    def recibir_dulces(self):
+        for _ in range(2):
+            tipo = TIPOS_DULCES[ord(self.nombre[0]) % 3]  # Para hacerlo determinista
             self.dulces[tipo] += 1
 
-    def total_dulces(self):
-        return sum(self.dulces.values())
+    def canjear_dulces(self):
+        if all(self.dulces[tipo] >= 1 for tipo in TIPOS_DULCES):
+            for tipo in TIPOS_DULCES:
+                self.dulces[tipo] -= 1
+            self.chupetines += 1
+            self.salvado = True
+            return True
+        else:
+            return False
 
-    def dar_dulces_aleatorios(self):
-        import random
-        for tipo in ['A', 'B', 'C']:
-            self.dulces[tipo] += random.randint(0, 3)
+    def dar_dulce_extra(self, tipo):
+        self.dulces[tipo] += 1
+
+    def tiene_dulce(self, tipo):
+        return self.dulces[tipo] > 0
+
+    def quitar_dulce(self, tipo):
+        if self.dulces[tipo] > 0:
+            self.dulces[tipo] -= 1
+            return True
+        return False
+
+    def dar_dulce(self, tipo):
+        self.dulces[tipo] += 1
+
+    def mostrar_inventario(self):
+        return f"{self.nombre} | Dulces: {dict(self.dulces)}, Chupetines: {self.chupetines}, Salvado: {self.salvado}"
   </script>
 
   <script>
