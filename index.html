@@ -96,7 +96,7 @@ class Jugador:
         self.canjes_realizados = 0
         self.salvado = False
 
-    def recibir_dulces(self):
+    def dar_dulces_aleatorios(self):
         for _ in range(2):
             tipo = TIPOS_DULCES[ord(self.nombre[0]) % 3]  # Para hacerlo determinista
             self.dulces[tipo] += 1
