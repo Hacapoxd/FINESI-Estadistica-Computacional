@@ -125,29 +125,28 @@ class Jugador:
     document.getElementById('loading').classList.remove('hidden');
     document.getElementById('btnIniciar').disabled = true;
 
+    // Cargar Pyodide
     window.pyodide = await loadPyodide({
       indexURL: "https://cdn.jsdelivr.net/pyodide/v0.23.4/full/",
     });
 
+    // Ejecutar clase Jugador en Python
     const pythonCode = document.getElementById("py-src").textContent;
     await pyodide.runPythonAsync(pythonCode);
 
-    // Crear jugadores
+    // Nombres de jugadores
     const nombres = [
       "Ana 👩", "Beto 👨", "Carlos 🧑",
       "Harrison 👨‍💼", "Russbel 👨‍🎓", "Brian 👨‍💻",
       "Cesia 👩‍🎨", "Roberth 👨‍🔧", "Danny 👨‍🎤"
     ];
 
-    // 👇 Esta es la forma correcta de pasar la lista a Python
+    // Pasar la lista a Python de forma segura
     pyodide.globals.set("nombres", nombres);
-
-    const code = `
+    await pyodide.runPythonAsync(`
 jugadores = [Jugador(nombre) for nombre in nombres]
-`;
-    await pyodide.runPythonAsync(code);
+    `);
 
-    jugadores = nombres; // aquí seguimos usando JS para mostrar y controlar
     pyodideReady = true;
     document.getElementById('loading').classList.add('hidden');
     document.getElementById('gameContent').classList.remove('hidden');
@@ -163,34 +162,42 @@ jugadores = [Jugador(nombre) for nombre in nombres]
   }
 }
 
+function mostrarJugadores() {
+  const contenedor = document.getElementById("jugadores");
+  const select = document.getElementById("jugadorCanje");
+  contenedor.innerHTML = "";
+  select.innerHTML = '<option value="">Selecciona un jugador...</option>';
 
-    function mostrarJugadores() {
-      const contenedor = document.getElementById("jugadores");
-      const select = document.getElementById("jugadorCanje");
-      contenedor.innerHTML = "";
-      select.innerHTML = '<option value="">Selecciona un jugador...</option>';
+  try {
+    const numJugadores = pyodide.runPython(`len(jugadores)`);
+    for (let i = 0; i < numJugadores; i++) {
+      const nombre = pyodide.runPython(`jugadores[${i}].nombre`);
+      const canjes = pyodide.runPython(`jugadores[${i}].canjes_realizados`);
+      const a = pyodide.runPython(`jugadores[${i}].dulces['A']`);
+      const b = pyodide.runPython(`jugadores[${i}].dulces['B']`);
+      const c = pyodide.runPython(`jugadores[${i}].dulces['C']`);
 
-      for (let i = 0; i < jugadores.length; i++) {
-        const jugador = pyodide.runPython(`jugadores[${i}]`);
-        const inventario = pyodide.runPython(`jugadores[${i}].dulces`);
-        const canjes = pyodide.runPython(`jugadores[${i}].canjes_realizados`);
+      const div = document.createElement("div");
+      div.className = "player-card";
+      div.innerHTML = `
+        <div class="player-name">${nombre} <span>(${canjes} canjes)</span></div>
+        <div class="candy-item"><span>Tipo A</span><span>${a}</span></div>
+        <div class="candy-item"><span>Tipo B</span><span>${b}</span></div>
+        <div class="candy-item"><span>Tipo C</span><span>${c}</span></div>
+      `;
+      contenedor.appendChild(div);
 
-        const div = document.createElement("div");
-        div.className = "player-card";
-        div.innerHTML = `
-          <div class="player-name">${jugador.nombre} <span>(${canjes} canjes)</span></div>
-          <div class="candy-item"><span>Tipo A</span><span>${inventario.get('A')}</span></div>
-          <div class="candy-item"><span>Tipo B</span><span>${inventario.get('B')}</span></div>
-          <div class="candy-item"><span>Tipo C</span><span>${inventario.get('C')}</span></div>
-        `;
-        contenedor.appendChild(div);
-
-        const opt = document.createElement("option");
-        opt.value = i;
-        opt.text = jugador.nombre;
-        select.appendChild(opt);
-      }
+      const opt = document.createElement("option");
+      opt.value = i;
+      opt.text = nombre;
+      select.appendChild(opt);
     }
+  } catch (err) {
+    console.error("Error al mostrar jugadores:", err);
+    mostrarMensaje("No se pudieron mostrar los jugadores.", "error");
+  }
+}
+
 
     function canjearDulce() {
       const idx = document.getElementById("jugadorCanje").value;
