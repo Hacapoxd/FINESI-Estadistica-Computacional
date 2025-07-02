@@ -1,0 +1,4 @@
+# _config.yml
+theme: jekyll-theme-minimal
+sass:
+  sass_dir: false
