@@ -76,6 +76,23 @@
             🔄 Reiniciar Juego
           </button>
         </div>
+        <div class="control-card">
+          <h3>🔁 Pedir Dulce a otro jugador</h3>
+          <select id="solicitante">
+            <option value="">Quien pide...</option>
+          </select>
+          <select id="receptor">
+            <option value="">A quién le pide...</option>
+          </select>
+          <select id="tipoDulce">
+            <option value="">Tipo de dulce...</option>
+            <option value="A">Tipo A</option>
+            <option value="B">Tipo B</option>
+            <option value="C">Tipo C</option>
+          </select>
+          <button class="btn" onclick="pedirDulce()">Solicitar</button>
+        </div>
+
       </div>
 
       <div class="players-grid" id="jugadores"></div>
@@ -83,8 +100,9 @@
   </div>
 
   <!-- Lógica del juego -->
-  <script id="py-src" type="text/python">
+<script id="py-src" type="text/python">
 from collections import defaultdict
+import random
 
 TIPOS_DULCES = ['A', 'B', 'C']
 
@@ -97,22 +115,24 @@ class Jugador:
         self.salvado = False
 
     def dar_dulces_aleatorios(self):
-        for _ in range(2):
-            tipo = TIPOS_DULCES[ord(self.nombre[0]) % 3]  # Para hacerlo determinista
-            self.dulces[tipo] += 1
+        # Genera entre 0 y 2 dulces de cada tipo de forma aleatoria
+        for tipo in TIPOS_DULCES:
+            self.dulces[tipo] += random.randint(0, 2)
 
     def canjear_dulces(self):
         if all(self.dulces[tipo] >= 1 for tipo in TIPOS_DULCES):
             for tipo in TIPOS_DULCES:
                 self.dulces[tipo] -= 1
             self.chupetines += 1
+            self.canjes_realizados += 1
             self.salvado = True
             return True
         else:
             return False
 
     def dar_dulce_extra(self, tipo):
-        self.dulces[tipo] += 1
+        if tipo in TIPOS_DULCES:
+            self.dulces[tipo] += 1
 
     def tiene_dulce(self, tipo):
         return self.dulces[tipo] > 0
@@ -126,9 +146,21 @@ class Jugador:
     def dar_dulce(self, tipo):
         self.dulces[tipo] += 1
 
+    def solicitar_dulce(self, otro, tipo):
+        # Intenta recibir un dulce del otro jugador
+        if otro.tiene_dulce(tipo):
+            if otro.quitar_dulce(tipo):
+                self.dar_dulce(tipo)
+                return True
+        return False
+
+    def total_dulces(self):
+        return sum(self.dulces[tipo] for tipo in TIPOS_DULCES)
+
     def mostrar_inventario(self):
         return f"{self.nombre} | Dulces: {dict(self.dulces)}, Chupetines: {self.chupetines}, Salvado: {self.salvado}"
-  </script>
+</script>
+
 
   <script>
     let pyodideReady = false;
@@ -189,6 +221,18 @@ function mostrarJugadores() {
     for (let i = 0; i < numJugadores; i++) {
       const nombre = pyodide.runPython(`jugadores[${i}].nombre`);
       const canjes = pyodide.runPython(`jugadores[${i}].canjes_realizados`);
+      const selSolicitante = document.getElementById("solicitante");
+      const selReceptor = document.getElementById("receptor");
+      
+      const opt1 = document.createElement("option");
+      opt1.value = i;
+      opt1.text = nombre;
+      selSolicitante.appendChild(opt1);
+      
+      const opt2 = document.createElement("option");
+      opt2.value = i;
+      opt2.text = nombre;
+      selReceptor.appendChild(opt2);
       const a = pyodide.runPython(`jugadores[${i}].dulces['A']`);
       const b = pyodide.runPython(`jugadores[${i}].dulces['B']`);
       const c = pyodide.runPython(`jugadores[${i}].dulces['C']`);
@@ -275,6 +319,35 @@ function mostrarJugadores() {
         mostrarMensaje("Hubo un error al repartir dulces", "error");
       }
     }
+    
+    function pedirDulce() {
+      const solicitante = document.getElementById("solicitante").value;
+      const receptor = document.getElementById("receptor").value;
+      const tipo = document.getElementById("tipoDulce").value;
+    
+      if (solicitante === "" || receptor === "" || tipo === "" || solicitante === receptor) {
+        mostrarMensaje("Completa todos los campos y elige jugadores distintos", "error");
+        return;
+      }
+    
+      try {
+        const resultado = pyodide.runPython(`
+    jugadores[${solicitante}].solicitar_dulce(jugadores[${receptor}], "${tipo}")
+        `);
+        if (resultado) {
+          totalIntercambios++;
+          mostrarMensaje("El jugador aceptó y entregó el dulce", "success");
+        } else {
+          mostrarMensaje("No se pudo realizar el intercambio", "error");
+        }
+        mostrarJugadores();
+        actualizarEstadisticas();
+      } catch (e) {
+        console.error("Error en solicitud de dulce:", e);
+        mostrarMensaje("Error al intentar solicitar dulce", "error");
+      }
+    }
+
 
     function reiniciarJuego() {
       location.reload();
