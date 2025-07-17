@@ -19,14 +19,14 @@
 
 ## 📌 Proyectos Académicos
 
-| Proyecto                        | Descripción                                                                 |
-|-------------------------------|----------------------------------------------------------------------------|
-| Prueba t-student + ANOVA      | Análisis estadístico comparativo entre grupos usando R                     |
-| Pruebas_Estadisticas_shiny    | Aplicación web en R Shiny para realizar pruebas estadísticas fácilmente   |
-| agente_gatos                  | Simulación de un agente inteligente para moverse en un entorno de gatos    |
-| ia_aplicacion                 | Proyecto de aplicación con elementos de inteligencia artificial en Python |
-| prueba T-student              | Evaluación de diferencias de medias con distribución T                     |
-| random_pack                   | Paquete con funciones para generación y análisis de datos aleatorios       |
+| Proyecto | Descripción |
+|----------|-------------|
+| [`Prueba t-student + ANOVA`](https://github.com/Hacapoxd/Finesi-lp3/tree/main/homeworks/Prueba%20t-student%20%2B%20ANOVA) | Análisis estadístico comparativo entre grupos usando R |
+| [`Pruebas_Estadisticas_shiny`](https://github.com/Hacapoxd/Finesi-lp3/tree/main/homeworks/Pruebas_Estadisticas_shiny) | Aplicación web en R Shiny para realizar pruebas estadísticas fácilmente |
+| [`agente_gatos`](https://github.com/Hacapoxd/Finesi-lp3/tree/main/homeworks/agente_gatos) | Simulación de un agente inteligente para moverse en un entorno de gatos |
+| [`ia_aplicacion`](https://github.com/Hacapoxd/Finesi-lp3/tree/main/homeworks/ia_aplicacion) | Proyecto de aplicación con elementos de inteligencia artificial en Python |
+| [`prueba T-student`](https://github.com/Hacapoxd/Finesi-lp3/tree/main/homeworks/prueba%20T-student) | Evaluación de diferencias de medias con distribución T |
+| [`random_pack`](https://github.com/Hacapoxd/Finesi-lp3/tree/main/homeworks/random_pack) | Paquete con funciones para generación y análisis de datos aleatorios |
 
 ---
 
